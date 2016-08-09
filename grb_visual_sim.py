@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import matplotlib.colors as colors
 from urllib2 import urlopen
+from BATSEUtils import get_BATSE_bg_slope
+
 
 
 
@@ -20,27 +22,6 @@ def main():
     burst_num = str(input("Enter Burst ID "))
     fname = '/Users/Thomas/Desktop/Code/Python_GRB/data/raw_data/cat64ms.' + burst_num.zfill(5)
 
-
-    ## check to see if t90 data exists for burst ##
-    t90data = urlopen("http://gammaray.nsstc.nasa.gov/batse/grb/catalog/current/tables/duration_table.txt")
-    exists = 0
-    if len(burst_num) == 3:
-        pad = '   '
-    elif len(burst_num) ==4:
-        pad = '  '
-    else:
-        pad = ' '
-    for line in t90data:
-        if line.startswith(pad + burst_num + ' '): 
-            print "t90 data exists for " + burst_num
-            split_string = line.split()
-            t90_dur, t90_start = split_string[4], split_string[6]
-            exists = 1
-            break
-    if exists == 0:
-        print "t90 data does not exist for " + burst_num + ". This may cause the background noise to be simulated incorrectly"
-
-
     ## open and parse burst data into 64ms time format ##
     if not os.path.isfile(fname): 
         print "No data for Burst ID: " + burst_num
@@ -53,19 +34,48 @@ def main():
     # chan1, chan2, chan3, chan4 = chan1[+1:], chan2[+1:], chan3[+1:], chan4[+1:]
     # time = (np.arange(0,num_points).astype(int)-num_lasc)*.064
 
-    med_chan1 = np.median(chan1)
-    zvals = np.random.poisson(lam=np.sqrt(med_chan1),size=(plot_size,plot_size))+med_chan1
-    zvals[0][0] = max(chan1)
-    zvals[plot_size-1][plot_size-1] = 0
+    slope = get_BATSE_bg_slope(burst_num,four_channel)
 
-    # make a color map of fixed colors
-    cmap = colors.LinearSegmentedColormap.from_list('my_colormap', ['black','red'], 256)
-    # tell imshow about color map so that only set colors are used
-    img = plt.imshow(zvals,interpolation='nearest', cmap = cmap, origin='lower')
-    # make a color bar
-    plt.colorbar(img,cmap=cmap)
+    print slope
 
-    plt.show()
+    # med_chan = np.median(four_channel)
+    # zvals = np.random.poisson(lam=med_chan,size=(plot_size,plot_size))+med_chan
+    # zvals[0][0] = max(four_channel)
+    # zvals[plot_size-1][plot_size-1] = 0
+
+    # # make a color map of fixed colors
+    # cmap = colors.LinearSegmentedColormap.from_list('my_colormap', ['black','red'], 256)
+    # # tell imshow about color map so that only set colors are used
+    # img = plt.imshow(zvals,interpolation='nearest', cmap = cmap, origin='lower')
+    # # make a color bar
+    # plt.colorbar(img,cmap=cmap)
+
+    # plt.show()
+
+
+    # cnt = 0
+    # color_arr = ('blue','green','yellow','red')
+    # chan_arr = (chan1, chan2, chan3, chan4)
+    # img = []
+    # for i in range(len(chan_arr)):
+        
+    #     med_chan1 = np.median(chan_arr[i])
+    #     zvals = np.random.poisson(lam=med_chan1,size=(plot_size,plot_size))+med_chan1
+    #     zvals[0][0] = max(chan_arr[i])
+    #     zvals[plot_size-1][plot_size-1] = 0
+    #     if cnt > 0:
+    #         print i
+    #         # make a color map of fixed colors
+    #         cmap = colors.LinearSegmentedColormap.from_list('my_colormap', ['black',color_arr[i]], 256)
+    #         # tell imshow about color map so that only set colors are used
+    #         img = plt.imshow(zvals,interpolation='nearest', cmap = cmap, origin='lower')
+    #         img = blend(background, list(zvals), 0.25)
+    #         # make a color bar
+    #         plt.colorbar(img,cmap=cmap)
+    #     background = zvals
+    #     cnt = cnt+1
+    #     print cnt
+    # plt.show()
 
 
     print 'Done'
