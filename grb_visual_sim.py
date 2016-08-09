@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import matplotlib.colors as colors
 from urllib2 import urlopen
-from BATSEUtils import get_BATSE_bg_slope
+from BATSEUtils import get_BATSE_bg_slope, get_BATSE_basic_table, get_BATSE_burst_data, get_BATSE_durations
 
 
 
@@ -13,30 +13,22 @@ from BATSEUtils import get_BATSE_bg_slope
 def main():
 
     plot_size = 500
-
-    ####################################
-    #### Imports and Organizes Data ####
-    ####################################
-
     ## get burst id from user ###
     burst_num = str(input("Enter Burst ID "))
-    fname = '/Users/Thomas/Desktop/Code/Python_GRB/data/raw_data/cat64ms.' + burst_num.zfill(5)
 
-    ## open and parse burst data into 64ms time format ##
-    if not os.path.isfile(fname): 
-        print "No data for Burst ID: " + burst_num
-        return
-    print 'Opening burst '+ burst_num
-    chan1, chan2, chan3, chan4 = np.loadtxt(fname, dtype = float, unpack=True, skiprows=2)
+    header_data,chan1,chan2,chan3,chan4 = get_BATSE_burst_data(burst_num)
     four_channel = np.add(np.add(np.add(chan1,chan2),chan3),chan4)
-    # extra data not used in this program, but it is cool
-    # trig_num, num_points, num_lasc, one_preb = chan1[0], chan2[0], chan3[0], chan4[0]
-    # chan1, chan2, chan3, chan4 = chan1[+1:], chan2[+1:], chan3[+1:], chan4[+1:]
-    # time = (np.arange(0,num_points).astype(int)-num_lasc)*.064
 
-    slope = get_BATSE_bg_slope(burst_num,four_channel)
+    # time calculated off of npts and nlasc from basic table data
+    time = (np.arange(0,header_data[1]).astype(int)-header_data[2])*.064
+    # might not be correct -> start_time = header_data[2] + header_data[3]
 
-    print slope
+    basic_data = get_BATSE_basic_table(burst_num)
+    duration_data = get_BATSE_durations(burst_num)
+
+    # slope = get_BATSE_bg_slope(burst_num,four_channel,time,t90_dur,t90_start,trigger)
+
+    print basic_data
 
     # med_chan = np.median(four_channel)
     # zvals = np.random.poisson(lam=med_chan,size=(plot_size,plot_size))+med_chan
