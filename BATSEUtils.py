@@ -1,5 +1,6 @@
 
 from os import path
+from scipy import stats
 import numpy as np
 from urllib2 import urlopen
 
@@ -38,7 +39,7 @@ def get_BATSE_basic_table(burst_num):
     else:
         pad = ''
 
-    # earch the basic table and return results
+    # search the basic table and return results
     for line in data:
         if line.startswith(pad + burst_num + ' '): 
             print "basic data exists for " + burst_num
@@ -52,15 +53,30 @@ def get_BATSE_basic_table(burst_num):
 
 
 
+def get_BATSE_bg_slope(burst_num):
+    ###############################
+    # Given a burst ID, this function returns the start and end background bounds
+    #   relative to the trigger, the background slope, and the background height.
+    # Slope and height in the table was calculated by removing the data between the t90 start and end points,
+    #   and running a linear least squares on the remaining data. (not a perfect method, but it gets the point)
+    # NOTE: Some values turn up null/nan. This is most likely due to incorrectly calculated t90 times.
+    # values returned are:
+    #     [burst_id  start_bkgd_bound  end_bkgd_bound  background_slope  background_height]
+    ###############################
+    data = open("background_data.txt")
+    exists = 0
 
-def get_BATSE_bg_slope(burst_num,data,time,t90_dur,t90_start,trigger):
-    ###############################
-    # Given a burst ID and an array of BATSE time-series data, this function calculates the background
-    # slope of a burst and returns it as a float.
-    # Slope is calculated by removing the data between the t90 start and end points,
-    # and then running a least squares on the remainder. (not a perfect method, but it gets the idea across)
-    ###############################
-    print trigger
+    # search the background table and return results
+    for line in data:
+        if line.startswith(burst_num + ' '): 
+            print "background data exists for " + burst_num
+            exists = 1
+            break
+    if exists == 0:
+        return "background data does not exist for " + burst_num
+
+    basic_data_array = line.split()
+    return basic_data_array
 
 
 
@@ -123,7 +139,7 @@ def get_BATSE_durations(burst_num):
     else:
         pad = ' '
 
-    # earch the duration table and return results
+    # search the duration table and return results
     for line in data:
         if line.startswith(pad + burst_num + ' '): 
             print "duration data exists for " + burst_num

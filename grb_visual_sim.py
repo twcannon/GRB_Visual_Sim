@@ -18,17 +18,20 @@ def main():
 
     header_data,chan1,chan2,chan3,chan4 = get_BATSE_burst_data(burst_num)
     four_channel = np.add(np.add(np.add(chan1,chan2),chan3),chan4)
+    time = (np.arange(len(four_channel)))*0.064
 
-    # time calculated off of npts and nlasc from basic table data
-    time = (np.arange(0,header_data[1]).astype(int)-header_data[2])*.064
-    # might not be correct -> start_time = header_data[2] + header_data[3]
+    # trigger_index = (header_data[2]-1) + (32+1)
+    # ctime=0.064*(np.arange(len(four_channel))-trigger_index)
+    # basic_data = get_BATSE_basic_table(burst_num)
+    # duration_data = get_BATSE_durations(burst_num)
 
-    basic_data = get_BATSE_basic_table(burst_num)
-    duration_data = get_BATSE_durations(burst_num)
+    burst_id,start_bkgd_bound,end_bkgd_bound,background_slope,background_height = get_BATSE_bg_slope(burst_num)
+    background = (np.ones(len(four_channel))*float(background_slope))+float(background_height)
 
-    # slope = get_BATSE_bg_slope(burst_num,four_channel,time,t90_dur,t90_start,trigger)
 
-    print basic_data
+    plt.plot(time,four_channel)
+    plt.plot(time,background)
+    plt.show()
 
     # med_chan = np.median(four_channel)
     # zvals = np.random.poisson(lam=med_chan,size=(plot_size,plot_size))+med_chan
