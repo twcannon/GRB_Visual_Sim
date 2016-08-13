@@ -1,10 +1,12 @@
 
 import numpy as np
 import os, sys
-import matplotlib.pyplot as plt
+import math
 import matplotlib.animation as animation
 import matplotlib.colors as colors
-from urllib2 import urlopen
+import matplotlib.mlab as mlab
+import matplotlib.pyplot as plt
+from scipy.stats import multivariate_normal
 from BATSEUtils import get_BATSE_bg_slope, get_BATSE_basic_table, get_BATSE_burst_data, get_BATSE_durations
 
 
@@ -27,25 +29,56 @@ def main():
 
     burst_id,start_bkgd_bound,end_bkgd_bound,background_slope,background_height = get_BATSE_bg_slope(burst_num)
     background = (np.ones(len(four_channel))*float(background_slope))+float(background_height)
+    # plt.plot(time,four_channel)
+    # plt.plot(time,background)
+    # plt.show()
 
 
-    plt.plot(time,four_channel)
-    plt.plot(time,background)
-    plt.show()
+    # x = np.linspace(0, 5, 10, endpoint=False)
+    # y = multivariate_normal.pdf(x, mean=2.5, cov=0.5); y
+    # plt.plot(x, y)
 
-    # med_chan = np.median(four_channel)
-    # zvals = np.random.poisson(lam=med_chan,size=(plot_size,plot_size))+med_chan
-    # zvals[0][0] = max(four_channel)
-    # zvals[plot_size-1][plot_size-1] = 0
 
-    # # make a color map of fixed colors
-    # cmap = colors.LinearSegmentedColormap.from_list('my_colormap', ['black','red'], 256)
-    # # tell imshow about color map so that only set colors are used
-    # img = plt.imshow(zvals,interpolation='nearest', cmap = cmap, origin='lower')
-    # # make a color bar
-    # plt.colorbar(img,cmap=cmap)
+    x, y = np.mgrid[-1:1:.01, -1:1:.01]
+    pos = np.empty(x.shape + (2,))
+    pos[:, :, 0] = x; pos[:, :, 1] = y
+    rv = multivariate_normal([0.5, -0.2], [[2.0, 0.3], [0.3, 0.5]])
+    # plt.contourf(x, y, rv.pdf(pos))
 
     # plt.show()
+
+
+
+    # x, y = np.mgrid[-1.0:1.0:30j, -1.0:1.0:30j]
+    # # Need an (N, 2) array of (x, y) pairs.
+    # xy = np.column_stack([x.flat, y.flat])
+
+    # mu = np.array([0.0, 0.0])
+
+    # sigma = np.array([.025, .025])
+    # covariance = np.diag(sigma**2)
+
+    # z = multivariate_normal(xy, mean=mu, cov=covariance)
+
+    # # Reshape back to a (30, 30) grid.
+    # z = z.reshape(x.shape)
+    # print z
+
+
+
+    med_chan = np.median(four_channel)
+    zvals = np.random.poisson(lam=med_chan,size=(plot_size,plot_size))+med_chan
+    zvals[0][0] = max(four_channel)
+    zvals[plot_size-1][plot_size-1] = 0
+
+    # make a color map of fixed colors
+    cmap = colors.LinearSegmentedColormap.from_list('my_colormap', ['black','red'], 256)
+    # tell imshow about color map so that only set colors are used
+    img = plt.imshow(rv.pdf(pos),interpolation='nearest', cmap = cmap, origin='lower')
+    # make a color bar
+    plt.colorbar(img,cmap=cmap)
+
+    plt.show()
 
 
     # cnt = 0
